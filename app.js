@@ -89,11 +89,32 @@ $(document).on("ready", function() {
     };
 
     Board.prototype.undo = function() {
-
+        if (this.turnCount > 0) {
+            this.turnCount--;
+            this.board[this.moves[this.turnCount][0]] = null;
+            $('#'+this.moves[this.turnCount][0]).html('&nbsp;');
+            this.currentMove = (this.currentMove === "X" ? "O" : "X");
+            updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
+            if (this.turnCount === 0) $('#undo').prop('disabled', true);
+            if (this.turnCount < moves.length) $('#redo').prop('disabled', false);
+            if (this.winner) {
+                $("#board").click(makeMove);
+                this.winner = null;
+            }
+        }
     };
 
     Board.prototype.redo = function() {
-
+        if (this.turnCount < this.moves.length) {
+            this.board[this.moves[this.turnCount][0]] = this.moves[this.turnCount][1];
+            $('#'+this.moves[this.turnCount][0]).html(this.moves[this.turnCount][1]);
+            this.currentMove = (this.currentMove === "X" ? "O" : "X");
+            this.turnCount++;
+            if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
+            if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
+            this.updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
+            this.checkWinner();
+        }
     };
 
     // Start the game!
