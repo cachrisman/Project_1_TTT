@@ -10,8 +10,9 @@ $(document).on("ready", function() {
         this.player2 = new Player("O");
         this.board = new Board();
         this.currentMove = "X";
+        this.moves = [];
         this.turnCount = 0;
-        this.winner;
+        this.winner = null;
     }
 
     Game.prototype.winningCombinations = [
@@ -59,9 +60,9 @@ $(document).on("ready", function() {
     function Board() {
         var self = this;
         this.el = $("<div id='board'>");
-        this.$cells = {};
+        this.$cells = [];
         for (var i = 0; i < 9; i++) {
-            this.$cells.push("<div id='" + i + "' class='box'>&nbsp;</div>");
+            this.$cells.push(null);
         }
         this.$cells.forEach(function(v) {
             self.el.append(v);
@@ -70,15 +71,28 @@ $(document).on("ready", function() {
         //Store any other properties that board may have below, such as a reset option
     }
 
-    Board.prototype.reset() {
+    Board.prototype.reset = function() {
+        this.currentMove = "X";
+        this.turnCount = 0;
+        this.$cells = [null, null, null, null, null, null, null, null, null];
+        this.moves = [];
+        this.winner = null;
+        $('.box').html("&nbsp;");
+        updateContent("&nbsp;", "", "X's move");
+
+        $("#undo").click(undoMove); //EL for undo btn
+        $("#redo").click(redoMove); //EL for redo btn
+        $("#board").off("click");
+        $("#board").click(makeMove);
+        $('#undo').prop('disabled', true);
+        $('#redo').prop('disabled', true);
+    };
+
+    Board.prototype.undo = function() {
 
     };
 
-    Board.prototype.undo() {
-
-    };
-
-    Board.prototype.redo() {
+    Board.prototype.redo = function() {
 
     };
 
