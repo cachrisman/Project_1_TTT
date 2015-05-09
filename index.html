@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Title</title>
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" type="text/css" href="main.css">
-  <script type="text/javascript" src="bower_components/jquery/src/jquery.js"></script>
-  <script type="text/javascript" src="app.js"></script>
+    <title>Tic-Tac-Toe - OOP Refactor</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script type="text/javascript" src="bower_components/jquery/src/jquery.js"></script>
+    <script type="text/javascript" src="app.js"></script>
 </head>
+
 <body>
-  <!-- HTML Body -->
-  <h1>Tic Tac Toe</h1>
-  <!-- Tic Tac Toe Board here -->
-  <!-- Reset button -->
+    <h1 class="center">Tic Tac Toe</h1>
+    <div id="top" class="center">
+        <div id="playermove">&nbsp;</div>
+        <div id="notification">&nbsp;</div>
+    </div>
+    <div id='board_container'></div>
+    <div id="buttons">
+        <button id="reset">Reset</button>
+        <button id="undo">Undo</button>
+        <button id="redo">Redo</button>
+    </div>
 </body>
+
 </html>

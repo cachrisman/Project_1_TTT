@@ -1,3 +1,4 @@
+// "use strict";
 // OOP Tic Tac Toe boilerplate code
 
 // Execute this code only AFTER the document is ready
@@ -5,14 +6,10 @@
 $(document).on("ready", function() {
 
     function Game() {
-        //Create a new instance of player 1
-        //this.player1 = ...
-
-        //Do the same for a player 2
-        //this.player2 = ...
-
-        //Create the board
-        //this.board = ...
+        this.player1 = new Player("X");
+        this.player2 = new Player("O");
+        this.board = new Board();
+        this.currentMove = "X";
     }
 
     // Remember: prototypes are shared functions between all game instances
@@ -33,7 +30,11 @@ $(document).on("ready", function() {
 
     // A starter Board constructor.
     function Board() {
-
+        var self = this;
+        this.el = $("<div id='board'>");
+        this.$cells = {};
+        for (var i=0; i<9; i++) { this.cells.push("<div id='"+i+"' class='box'>&nbsp;</div>"); }
+        this.$cells.forEach(function(v){self.el.append(v);});
 
         //Tracks the cells of the board instance
         //this.$cells = ...
