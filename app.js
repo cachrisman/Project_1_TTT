@@ -94,7 +94,11 @@ $(document).on("ready", function() {
             this.board[this.moves[this.turnCount][0]] = null;
             $('#'+this.moves[this.turnCount][0]).html('&nbsp;');
             this.currentMove = (this.currentMove === "X" ? "O" : "X");
+<<<<<<< HEAD
             this.updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
+=======
+            updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
+>>>>>>> 90bc56339f3483c4aa05e92ccbca4d4b273567a6
             if (this.turnCount === 0) $('#undo').prop('disabled', true);
             if (this.turnCount < moves.length) $('#redo').prop('disabled', false);
             if (this.winner) {
