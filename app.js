@@ -28,12 +28,31 @@ $(document).on("ready", function() {
 
     // Remember: prototypes are shared functions between all game instances
     Game.prototype.nextPlayer = function() {
-        //Switch players
+        this.currentMove = (this.currentMove === "X" ? "O" : "X");
     };
 
     // `Game.prototype.init` kicks off a new game with a board and two players
     Game.prototype.init = function() {
-        //
+        this.board.draw();
+        $("#undo").click(this.board.undoMove); //EL for undo btn
+        $("#redo").click(this.board.redoMove); //EL for redo btn
+        $(".box").click(this.makeMove.bind(this));
+    };
+
+    Game.prototype.makeMove = function() {
+        if (event.target.innerHTML === "X" || event.target.innerHTML === "O") {
+            updateContent("Already selected", "red", "Still " + (XsMove ? "X" : "O") + "'s move", "Already selected. Still " + (XsMove ? "X" : "O") + "'s move");
+        } else {
+            event.target.innerHTML = this.currentMove;
+            this.board.cells[event.target.id] = this.currentMove;
+            this.moves.push([event.target.id,this.currentMove]);
+            this.nextPlayer();
+            this.board.draw();
+            //updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
+            this.turnCount++;
+            if (this.turnCount > 0) $('#undo').prop('disabled', false);
+            this.checkWinner();
+        }
     };
 
     Game.prototype.checkWinner = function() {
@@ -58,18 +77,39 @@ $(document).on("ready", function() {
 
     // A starter Board constructor.
     function Board() {
-        var self = this;
-        this.el = $("<div id='board'>");
-        this.$cells = [];
+        // var self = this;
+        this.cells = [];
         for (var i = 0; i < 9; i++) {
-            this.$cells.push(null);
+            this.cells.push(null);
         }
-        this.$cells.forEach(function(v) {
-            self.el.append(v);
-        });
-
-        //Store any other properties that board may have below, such as a reset option
+        // this.cells.forEach(function(v) {
+        //     self.el.append(v);
+        // });
+        this.playermove_text = "X's move";
+        this.notification_text = "&nbsp;";
+        this.notification_color = "";
     }
+
+    Board.prototype.draw = function() {
+        $('#playermove').html(this.playermove_text);
+        $('#notification').html(this.notification_text);
+        $('#notification').css("background-color", this.notification_color);
+
+        var $el_board = $("<div id='board'>");
+        for (var i = 0; i < 9; i++) {
+            if (this.cells[i]) $el_board.append("<div id='"+i+"' class='box'>"+this.cells[i]+"</div>");
+            else $el_board.append("<div id='"+i+"' class='box'>&nbsp;</div>");
+        }
+
+        $('#board_container').append($el_board);
+        // if (alert_text) alert(alert_text);
+
+
+        // $("#board").off("click");
+        // $("#board").click(makeMove);
+        // if (turnCount > 0) $('#undo').prop('disabled', true);
+        // if (turnCount < this.moves.length) $('#redo').prop('disabled', true);
+    };
 
     Board.prototype.reset = function() {
         this.currentMove = "X";
@@ -77,15 +117,7 @@ $(document).on("ready", function() {
         this.$cells = [null, null, null, null, null, null, null, null, null];
         this.moves = [];
         this.winner = null;
-        $('.box').html("&nbsp;");
-        updateContent("&nbsp;", "", "X's move");
-
-        $("#undo").click(undoMove); //EL for undo btn
-        $("#redo").click(redoMove); //EL for redo btn
-        $("#board").off("click");
-        $("#board").click(makeMove);
-        $('#undo').prop('disabled', true);
-        $('#redo').prop('disabled', true);
+        this.draw();
     };
 
     Board.prototype.undo = function() {
