@@ -28,15 +28,15 @@ $(document).on("ready", function() {
 
     // Remember: prototypes are shared functions between all game instances
     Game.prototype.nextPlayer = function() {
-        this.currentMove = (this.currentMove === "X" ? "O" : "X");
+        this.currentMove = this.currentMove === "X" ? "O" : "X";
     };
 
     // `Game.prototype.init` kicks off a new game with a board and two players
     Game.prototype.init = function() {
         this.board.draw();
-        $("#undo").click(this.board.undoMove); //EL for undo btn
-        $("#redo").click(this.board.redoMove); //EL for redo btn
-        $(".box").click(this.makeMove.bind(this));
+        $(".box").on("click", this.makeMove.bind(this));
+        $("#undo").on("click", this.board.undoMove); //EL for undo btn
+        $("#redo").on("click", this.board.redoMove); //EL for redo btn
     };
 
     Game.prototype.makeMove = function() {
@@ -47,11 +47,13 @@ $(document).on("ready", function() {
             this.board.cells[event.target.id] = this.currentMove;
             this.moves.push([event.target.id,this.currentMove]);
             this.nextPlayer();
+            $(".box").off("click");
             this.board.draw();
+            $(".box").on("click", this.makeMove.bind(this));
             //updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
             this.turnCount++;
             if (this.turnCount > 0) $('#undo').prop('disabled', false);
-            this.checkWinner();
+            // this.checkWinner();
         }
     };
 
@@ -101,6 +103,11 @@ $(document).on("ready", function() {
             else $el_board.append("<div id='"+i+"' class='box'>&nbsp;</div>");
         }
 
+        // var self = this;
+        // $('.box').each( function() {
+        //     $(this).html(self.cells[$(this)[0].id]);
+        // });
+        $('#board_container').html("");
         $('#board_container').append($el_board);
         // if (alert_text) alert(alert_text);
 
