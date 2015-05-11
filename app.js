@@ -26,12 +26,23 @@ $(document).on("ready", function() {
         [2, 4, 6]
     ];
 
-    // Remember: prototypes are shared functions between all game instances
+    /**
+     * Switches currentMove to next player
+     *
+     * @method  nextPlayer
+     */
+
     Game.prototype.nextPlayer = function() {
         this.currentMove = this.currentMove === this.player1.team ? this.player2.team : this.player1.team;
     };
 
-    // `Game.prototype.init` kicks off a new game with a board and two players
+    /**
+     * Starts initial game setup: draws the board, sets up the event listeners: reset button, undo
+     * button (initially disables button), and reset button (also initially disabled)
+     *
+     * @method  init
+     */
+
     Game.prototype.init = function() {
         this.board.draw();
         $('.box').on("click", this.makeMove.bind(this));
@@ -42,8 +53,14 @@ $(document).on("ready", function() {
         $('#redo').prop('disabled', true);
     };
 
+    /**
+     * makeMove is called when a box on the board is clicked.
+     *
+     * @method  makeMove
+     * @return  {[type]}  [description]
+     */
+
     Game.prototype.makeMove = function() {
-        $(".box").off("click");
         if (event.target.innerHTML === "X" || event.target.innerHTML === "O") {
             this.board.updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
         } else {
@@ -57,11 +74,10 @@ $(document).on("ready", function() {
             if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
         }
         this.board.draw();
-        $('.box').on("click", this.makeMove.bind(this));
+        if (this.winner) $('.box').off("click");
     };
 
     Game.prototype.reset = function() {
-        $(".box").off("click");
         this.currentMove = this.player1.team;
         this.turnCount = 0;
         this.board.cells = [null, null, null, null, null, null, null, null, null];
@@ -69,9 +85,9 @@ $(document).on("ready", function() {
         this.winner = null;
         this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
         this.board.draw();
-        $('.box').on("click", this.makeMove.bind(this));
         $('#undo').prop('disabled', true);
         $('#redo').prop('disabled', true);
+        $('.box').on("click", this.makeMove.bind(this));
     };
 
     Game.prototype.undo = function() {
@@ -82,8 +98,10 @@ $(document).on("ready", function() {
         this.board.draw();
         if (this.turnCount === 0) $('#undo').prop('disabled', true);
         if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
-        if (this.winner) this.winner = null;
-        $('.box').on("click", this.makeMove.bind(this));
+        if (this.winner) {
+            this.winner = null;
+            $('.box').on("click", this.makeMove.bind(this));
+        }
     };
 
     Game.prototype.redo = function() {
@@ -95,7 +113,7 @@ $(document).on("ready", function() {
         if (this.turnCount > 0) $('#undo').prop('disabled', false);
         if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
         if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
-        $('.box').on("click", this.makeMove.bind(this));
+        if (this.winner) $('.box').off("click");
     };
 
     Game.prototype.checkWinner = function() {
@@ -125,17 +143,21 @@ $(document).on("ready", function() {
     function Board() {
         this.cells = [null, null, null, null, null, null, null, null, null];
         this.updateContent("X's move", "&nbsp;", "", "");
+        this.isDrawn = false;
     }
 
     Board.prototype.draw = function() {
-        var $el_board = $("<div id='board'>");
-        for (var i = 0; i < 9; i++) {
-            if (this.cells[i]) $el_board.append("<div id='" + i + "' class='box'>" + this.cells[i] + "</div>");
-            else $el_board.append("<div id='" + i + "' class='box'>&nbsp;</div>");
+        if (!this.isDrawn) {
+            var $el_board = $("<div id='board'>");
+            for (var i = 0; i < 9; i++) $el_board.append("<div id='" + i + "' class='box'>&nbsp;</div>");
+            $('#board_container').append($el_board);
+            this.isDrawn = true;
+        } else {
+            for (var j = 0; j < 9; j++) {
+                if (!this.cells[j] && $('.box').eq(j) !== "&nbsp;") $('.box').eq(j).html("&nbsp;");
+                else if (this.cells[j] !== $('.box').eq(j).html()) $('.box').eq(j).html(this.cells[j]);
+            }
         }
-
-        $('#board_container').html("");
-        $('#board_container').append($el_board);
 
         $('#playermove').html(this.playermove_text);
         $('#notification').html(this.notification_text);
