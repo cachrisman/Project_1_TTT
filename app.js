@@ -8,6 +8,8 @@ $(document).on("ready", function() {
     function Game() {
         this.player1 = new Player("X");
         this.player2 = new Player("O");
+        // this.player1 = new Player("<img src='taco.png'>");
+        // this.player1 = new Player("<img src='burrito.jpg'>");
         this.board = new Board();
         this.currentMove = this.player1.team;
         this.turnCount = 0;
@@ -45,7 +47,7 @@ $(document).on("ready", function() {
 
     Game.prototype.init = function() {
         this.board.draw();
-        $('.box').on("click", this.makeMove.bind(this));
+        $('.cell').on("click", this.makeMove.bind(this));
         $('#reset').on("click", this.reset.bind(this)); //EL for reset btn
         $('#undo').on("click", this.undo.bind(this)); //EL for undo btn
         $('#undo').prop('disabled', true);
@@ -54,16 +56,18 @@ $(document).on("ready", function() {
     };
 
     /**
-     * makeMove is called when a box on the board is clicked.
+     * makeMove is called when a cell on the board is clicked. Checks if selected cell already has
+     * move and throws warning. If cell is empty, places current player marker, updates board tracker,
+     * trims moves array if longer than turnCount, pushes new move into moves array, increases turnCount,
+     * calls checkWinner, turns on undo button if turnCount is greater than zero and turns off redo
+     * button if there are no moves to redo.
      *
      * @method  makeMove
      * @return  {[type]}  [description]
      */
 
     Game.prototype.makeMove = function() {
-        if (event.target.innerHTML === "X" || event.target.innerHTML === "O") {
-            this.board.updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
-        } else {
+        if (event.target.innerHTML === "&nbsp;") {
             event.target.innerHTML = this.currentMove;
             this.board.cells[event.target.id] = this.currentMove;
             if (this.turnCount < this.moves.length) this.moves = this.moves.slice(0, this.turnCount);
@@ -72,9 +76,11 @@ $(document).on("ready", function() {
             this.checkWinner();
             if (this.turnCount > 0) $('#undo').prop('disabled', false);
             if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
+        } else  {
+            this.board.updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
         }
         this.board.draw();
-        if (this.winner) $('.box').off("click");
+        if (this.winner) $('.cell').off("click");
     };
 
     Game.prototype.reset = function() {
@@ -82,12 +88,14 @@ $(document).on("ready", function() {
         this.turnCount = 0;
         this.board.cells = [null, null, null, null, null, null, null, null, null];
         this.moves = [];
-        this.winner = null;
         this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
         this.board.draw();
         $('#undo').prop('disabled', true);
         $('#redo').prop('disabled', true);
-        $('.box').on("click", this.makeMove.bind(this));
+        if (this.winner) {
+            this.winner = null;
+            $('.cell').on("click", this.makeMove.bind(this));
+        }
     };
 
     Game.prototype.undo = function() {
@@ -100,7 +108,7 @@ $(document).on("ready", function() {
         if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
         if (this.winner) {
             this.winner = null;
-            $('.box').on("click", this.makeMove.bind(this));
+            $('.cell').on("click", this.makeMove.bind(this));
         }
     };
 
@@ -113,7 +121,7 @@ $(document).on("ready", function() {
         if (this.turnCount > 0) $('#undo').prop('disabled', false);
         if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
         if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
-        if (this.winner) $('.box').off("click");
+        if (this.winner) $('.cell').off("click");
     };
 
     Game.prototype.checkWinner = function() {
@@ -149,13 +157,13 @@ $(document).on("ready", function() {
     Board.prototype.draw = function() {
         if (!this.isDrawn) {
             var $el_board = $("<div id='board'>");
-            for (var i = 0; i < 9; i++) $el_board.append("<div id='" + i + "' class='box'>&nbsp;</div>");
+            for (var i = 0; i < 9; i++) $el_board.append("<div id='" + i + "' class='cell'>&nbsp;</div>");
             $('#board_container').append($el_board);
             this.isDrawn = true;
         } else {
             for (var j = 0; j < 9; j++) {
-                if (!this.cells[j] && $('.box').eq(j) !== "&nbsp;") $('.box').eq(j).html("&nbsp;");
-                else if (this.cells[j] !== $('.box').eq(j).html()) $('.box').eq(j).html(this.cells[j]);
+                if (!this.cells[j] && $('.cell').eq(j) !== "&nbsp;") $('.cell').eq(j).html("&nbsp;");
+                else if (this.cells[j] !== $('.cell').eq(j).html()) $('.cell').eq(j).html(this.cells[j]);
             }
         }
 
