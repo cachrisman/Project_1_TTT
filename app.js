@@ -10,8 +10,8 @@ $(document).on("ready", function() {
         this.player2 = new Player("O");
         this.board = new Board();
         this.currentMove = this.player1.team;
-        this.moves = [];
         this.turnCount = 0;
+        this.moves = [];
         this.winner = null;
     }
 
@@ -34,32 +34,68 @@ $(document).on("ready", function() {
     // `Game.prototype.init` kicks off a new game with a board and two players
     Game.prototype.init = function() {
         this.board.draw();
-        $(".box").on("click", this.makeMove.bind(this));
-        $("#undo").on("click", this.board.undo.bind(this)); //EL for undo btn
-        $("#redo").on("click", this.board.redo.bind(this)); //EL for redo btn
+        $('.box').on("click", this.makeMove.bind(this));
+        $('#reset').on("click", this.reset.bind(this)); //EL for reset btn
+        $('#undo').on("click", this.undo.bind(this)); //EL for undo btn
+        $('#undo').prop('disabled', true);
+        $('#redo').on("click", this.redo.bind(this)); //EL for redo btn
+        $('#redo').prop('disabled', true);
     };
 
     Game.prototype.makeMove = function() {
         $(".box").off("click");
         if (event.target.innerHTML === "X" || event.target.innerHTML === "O") {
-            updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
+            this.board.updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
         } else {
             event.target.innerHTML = this.currentMove;
             this.board.cells[event.target.id] = this.currentMove;
+            if (this.turnCount < this.moves.length) this.moves = this.moves.slice(0, this.turnCount);
             this.moves.push([event.target.id, this.currentMove]);
+            this.turnCount++;
             this.checkWinner();
-            if (this.winner) {
-                updateContent("&nbsp;", this.currentMove + " Wins!", "lime", this.currentMove + " Wins!");
-            } else {
-                this.nextPlayer();
-                updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
-                this.turnCount++;
-            }
             if (this.turnCount > 0) $('#undo').prop('disabled', false);
+            if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
         }
         this.board.draw();
-        $(".box").on("click", this.makeMove.bind(this));
+        $('.box').on("click", this.makeMove.bind(this));
+    };
 
+    Game.prototype.reset = function() {
+        $(".box").off("click");
+        this.currentMove = this.player1.team;
+        this.turnCount = 0;
+        this.board.cells = [null, null, null, null, null, null, null, null, null];
+        this.moves = [];
+        this.winner = null;
+        this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+        this.board.draw();
+        $('.box').on("click", this.makeMove.bind(this));
+        $('#undo').prop('disabled', true);
+        $('#redo').prop('disabled', true);
+    };
+
+    Game.prototype.undo = function() {
+        this.turnCount--;
+        this.nextPlayer();
+        this.board.cells[this.moves[this.turnCount][0]] = null;
+        this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+        this.board.draw();
+        if (this.turnCount === 0) $('#undo').prop('disabled', true);
+        if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
+        if (this.winner) this.winner = null;
+        $('.box').on("click", this.makeMove.bind(this));
+    };
+
+    Game.prototype.redo = function() {
+        this.board.cells[this.moves[this.turnCount][0]] = this.moves[this.turnCount][1];
+        $('#' + this.moves[this.turnCount][0]).html(this.moves[this.turnCount][1]);
+        this.turnCount++;
+        this.checkWinner();
+        this.board.draw();
+        if (this.turnCount > 0) $('#undo').prop('disabled', false);
+        if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
+        if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
+        $('.box').on("click", this.makeMove.bind(this));
     };
 
     Game.prototype.checkWinner = function() {
@@ -71,6 +107,13 @@ $(document).on("ready", function() {
                 hasWon = true;
         }
         if (hasWon) this.winner = this.currentMove;
+        if (this.winner) {
+            this.board.updateContent("&nbsp;", this.currentMove + " Wins!", "lime", this.currentMove + " Wins!");
+            this.nextPlayer();
+        } else {
+            this.nextPlayer();
+            this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+        }
     };
 
     // A starter Player constructor.
@@ -80,12 +123,8 @@ $(document).on("ready", function() {
 
     // A starter Board constructor.
     function Board() {
-        this.cells = [];
         this.cells = [null, null, null, null, null, null, null, null, null];
-        this.playermove_text = "X's move";
-        this.notification_text = "&nbsp;";
-        this.notification_color = "";
-        this.alert_text = "";
+        this.updateContent("X's move", "&nbsp;", "", "");
     }
 
     Board.prototype.draw = function() {
@@ -109,44 +148,6 @@ $(document).on("ready", function() {
         this.notification_text = notification_text;
         this.notification_color = notification_color;
         this.alert_text = alert_text;
-    };
-
-    Board.prototype.reset = function() {
-        this.currentMove = "X";
-        this.turnCount = 0;
-        this.cells = [null, null, null, null, null, null, null, null, null];
-        this.moves = [];
-        this.winner = null;
-        this.draw();
-    };
-
-    Board.prototype.undo = function() {
-        if (this.turnCount > 0) {
-            this.turnCount--;
-            this.board[this.moves[this.turnCount][0]] = null;
-            $('#' + this.moves[this.turnCount][0]).html('&nbsp;');
-            this.currentMove = (this.currentMove === "X" ? "O" : "X");
-            this.updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
-            if (this.turnCount === 0) $('#undo').prop('disabled', true);
-            if (this.turnCount < moves.length) $('#redo').prop('disabled', false);
-            if (this.winner) {
-                $("#board").click(makeMove);
-                this.winner = null;
-            }
-        }
-    };
-
-    Board.prototype.redo = function() {
-        if (this.turnCount < this.moves.length) {
-            this.board[this.moves[this.turnCount][0]] = this.moves[this.turnCount][1];
-            $('#' + this.moves[this.turnCount][0]).html(this.moves[this.turnCount][1]);
-            this.currentMove = (this.currentMove === "X" ? "O" : "X");
-            this.turnCount++;
-            if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
-            if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
-            this.updateContent("&nbsp;", "", (XsMove ? "X" : "O") + "'s move");
-            this.checkWinner();
-        }
     };
 
     // Start the game!
