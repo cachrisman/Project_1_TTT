@@ -6,12 +6,13 @@
 $(document).on("ready", function() {
 
     function Game() {
-        this.player1 = new Player("X");
-        this.player2 = new Player("O");
-        // this.player1 = new Player("<img src='taco.png'>");
-        // this.player1 = new Player("<img src='burrito.jpg'>");
+        // this.player1 = new Player("X");
+        // this.player2 = new Player("O");
+        this.player1 = new Player("Taco", "<img src='taco.png'>");
+        this.player2 = new Player("Burrito", "<img src='burrito.jpg'>");
         this.board = new Board();
-        this.currentMove = this.player1.team;
+        this.currentMove = this.player1;
+        this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.turnCount = 0;
         this.moves = [];
         this.winner = null;
@@ -35,7 +36,7 @@ $(document).on("ready", function() {
      */
 
     Game.prototype.nextPlayer = function() {
-        this.currentMove = this.currentMove === this.player1.team ? this.player2.team : this.player1.team;
+        this.currentMove = this.currentMove === this.player1 ? this.player2 : this.player1;
     };
 
     /**
@@ -68,27 +69,27 @@ $(document).on("ready", function() {
 
     Game.prototype.makeMove = function() {
         if (event.target.innerHTML === "&nbsp;") {
-            event.target.innerHTML = this.currentMove;
-            this.board.cells[event.target.id] = this.currentMove;
+            event.target.innerHTML = this.currentMove.html;
+            this.board.cells[event.target.id] = this.currentMove.team;
             if (this.turnCount < this.moves.length) this.moves = this.moves.slice(0, this.turnCount);
-            this.moves.push([event.target.id, this.currentMove]);
+            this.moves.push([event.target.id, this.currentMove.team]);
             this.turnCount++;
             this.checkWinner();
             if (this.turnCount > 0) $('#undo').prop('disabled', false);
             if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
-        } else  {
-            this.board.updateContent("Still " + this.currentMove + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
+        } else {
+            this.board.updateContent("Still " + this.currentMove.team + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
         }
         this.board.draw();
         if (this.winner) $('.cell').off("click");
     };
 
     Game.prototype.reset = function() {
-        this.currentMove = this.player1.team;
+        this.currentMove = this.player1;
         this.turnCount = 0;
         this.board.cells = [null, null, null, null, null, null, null, null, null];
         this.moves = [];
-        this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+        this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.board.draw();
         $('#undo').prop('disabled', true);
         $('#redo').prop('disabled', true);
@@ -102,7 +103,7 @@ $(document).on("ready", function() {
         this.turnCount--;
         this.nextPlayer();
         this.board.cells[this.moves[this.turnCount][0]] = null;
-        this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+        this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.board.draw();
         if (this.turnCount === 0) $('#undo').prop('disabled', true);
         if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
@@ -127,43 +128,43 @@ $(document).on("ready", function() {
     Game.prototype.checkWinner = function() {
         var hasWon = false;
         for (var i = 0; i < this.winningCombinations.length; i++) {
-            if (this.board.cells[this.winningCombinations[i][0]] === this.currentMove &&
-                this.board.cells[this.winningCombinations[i][1]] === this.currentMove &&
-                this.board.cells[this.winningCombinations[i][2]] === this.currentMove)
+            if (this.board.cells[this.winningCombinations[i][0]] === this.currentMove.team &&
+                this.board.cells[this.winningCombinations[i][1]] === this.currentMove.team &&
+                this.board.cells[this.winningCombinations[i][2]] === this.currentMove.team)
                 hasWon = true;
         }
         if (hasWon) this.winner = this.currentMove;
         if (this.winner) {
-            this.board.updateContent("&nbsp;", this.currentMove + " Wins!", "lime", this.currentMove + " Wins!");
+            this.board.updateContent("&nbsp;", this.currentMove.team + " Wins!", "lime", this.currentMove.team + " Wins!");
             this.nextPlayer();
         } else {
             this.nextPlayer();
-            this.board.updateContent(this.currentMove + "'s move", "&nbsp;", "", "");
+            this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         }
     };
 
     // A starter Player constructor.
-    function Player(team) {
+    function Player(team, html) {
         this.team = team;
+        this.html = html || team;
     }
 
     // A starter Board constructor.
     function Board() {
         this.cells = [null, null, null, null, null, null, null, null, null];
-        this.updateContent("X's move", "&nbsp;", "", "");
         this.isDrawn = false;
     }
 
     Board.prototype.draw = function() {
         if (!this.isDrawn) {
             var $el_board = $("<div id='board'>");
-            for (var i = 0; i < 9; i++) $el_board.append("<div id='" + i + "' class='cell'>&nbsp;</div>");
+            for (var i = 0; i < 9; i++) $el_board.append("<div id='" + i + "' class='col-xs-4 cell'>&nbsp;</div>");
             $('#board_container').append($el_board);
             this.isDrawn = true;
         } else {
             for (var j = 0; j < 9; j++) {
                 if (!this.cells[j] && $('.cell').eq(j) !== "&nbsp;") $('.cell').eq(j).html("&nbsp;");
-                else if (this.cells[j] !== $('.cell').eq(j).html()) $('.cell').eq(j).html(this.cells[j]);
+                // else if (this.cells[j] !== $('.cell').eq(j).html()) $('.cell').eq(j).html(this.cells[j]);
             }
         }
 
