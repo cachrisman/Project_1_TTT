@@ -8,11 +8,10 @@ $(document).on("ready", function() {
     function Game() {
         // this.player1 = new Player("X");
         // this.player2 = new Player("O");
-        this.player1 = new Player("Taco", "<img src='taco.png'>");
-        this.player2 = new Player("Burrito", "<img src='burrito.jpg'>");
+        this.player1 = new Player();
+        this.player2 = new Player();
         this.board = new Board();
         this.currentMove = this.player1;
-        this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.turnCount = 0;
         this.moves = [];
         this.winner = null;
@@ -49,11 +48,25 @@ $(document).on("ready", function() {
     Game.prototype.init = function() {
         this.board.draw();
         $('.cell').on("click", this.makeMove.bind(this));
+        $('#settings').on("click", function(){$('.overlay').show();});
+        $('#close').on("click", function(){$('.overlay').hide();});
+        $(document).on("keyup", function(e) {if (e.keyCode == 27) { $('.overlay').hide();}});
         $('#reset').on("click", this.reset.bind(this)); //EL for reset btn
-        $('#undo').on("click", this.undo.bind(this)); //EL for undo btn
-        $('#undo').prop('disabled', true);
-        $('#redo').on("click", this.redo.bind(this)); //EL for redo btn
-        $('#redo').prop('disabled', true);
+        // $('#undo').on("click", this.undo.bind(this)); //EL for undo btn
+        // $('#redo').on("click", this.redo.bind(this)); //EL for redo btn
+        $('form').on("submit", this.setup.bind(this));
+    };
+
+    Game.prototype.setup = function(event) {
+        event.preventDefault();
+        $('.overlay').hide();
+        // if (this.player1.team) $('#p1_name').val(this.player1.team);
+        // if (this.player1.html) $('#p1_url').val(this.player1.html.match(/<img src=\"(.*)">/));
+        // if (this.player2.team) $('#p2_name').val(this.player2.team);
+        this.player1.update($('#p1_name').val(), $('#p1_url').val());
+        this.player2.update($('#p2_name').val(), $('#p2_url').val());
+        this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
+        this.board.draw();
     };
 
     /**
@@ -75,8 +88,8 @@ $(document).on("ready", function() {
             this.moves.push([event.target.id, this.currentMove.team]);
             this.turnCount++;
             this.checkWinner();
-            if (this.turnCount > 0) $('#undo').prop('disabled', false);
-            if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
+            if (this.turnCount > 0) $('#undo').on("click", this.undo.bind(this));
+            if (this.turnCount === this.moves.length) $('#redo').off();
         } else {
             this.board.updateContent("Still " + this.currentMove.team + "'s move", "Already selected", "red", "Already selected. Still " + this.currentMove + "'s move");
         }
@@ -91,8 +104,8 @@ $(document).on("ready", function() {
         this.moves = [];
         this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.board.draw();
-        $('#undo').prop('disabled', true);
-        $('#redo').prop('disabled', true);
+        $('#undo').off();
+        $('#redo').off();
         if (this.winner) {
             this.winner = null;
             $('.cell').on("click", this.makeMove.bind(this));
@@ -105,8 +118,8 @@ $(document).on("ready", function() {
         this.board.cells[this.moves[this.turnCount][0]] = null;
         this.board.updateContent(this.currentMove.team + "'s move", "&nbsp;", "", "");
         this.board.draw();
-        if (this.turnCount === 0) $('#undo').prop('disabled', true);
-        if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
+        if (this.turnCount === 0) $('#undo').off();
+        if (this.turnCount < this.moves.length) $('#redo').on("click", this.redo.bind(this));
         if (this.winner) {
             this.winner = null;
             $('.cell').on("click", this.makeMove.bind(this));
@@ -115,13 +128,13 @@ $(document).on("ready", function() {
 
     Game.prototype.redo = function() {
         this.board.cells[this.moves[this.turnCount][0]] = this.moves[this.turnCount][1];
-        $('#' + this.moves[this.turnCount][0]).html(this.moves[this.turnCount][1]);
+        $('#' + this.moves[this.turnCount][0]).html((this.moves[this.turnCount][1] === this.player1.team) ? this.player1.html : this.player2.html);
         this.turnCount++;
         this.checkWinner();
         this.board.draw();
-        if (this.turnCount > 0) $('#undo').prop('disabled', false);
-        if (this.turnCount < this.moves.length) $('#redo').prop('disabled', false);
-        if (this.turnCount === this.moves.length) $('#redo').prop('disabled', true);
+        if (this.turnCount > 0) $('#undo').on("click", this.undo.bind(this));
+        if (this.turnCount < this.moves.length) $('#redo').on("click", this.redo.bind(this));
+        if (this.turnCount === this.moves.length) $('#redo').off();
         if (this.winner) $('.cell').off("click");
     };
 
@@ -148,6 +161,11 @@ $(document).on("ready", function() {
         this.team = team;
         this.html = html || team;
     }
+
+    Player.prototype.update = function(name, url) {
+        this.team = name;
+        this.html = '<img src=' + url + '>';
+    };
 
     // A starter Board constructor.
     function Board() {

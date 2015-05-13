@@ -2,27 +2,64 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tic-Tac-Toe - OOP Refactor</title>
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.css">
     <link rel="stylesheet" type="text/css" href="main.css">
-    <script type="text/javascript" src="bower_components/jquery/src/jquery.js"></script>
-    <script type="text/javascript" src="app.js"></script>
 </head>
 
 <body>
     <h1 class="center">Tic Tac Toe</h1>
+    <div class="overlay">
+        <div id="setup" class="center">
+            <span class="glyphicon glyphicon-remove btn-xs pull-right" aria-hidden="true" id='close' title="close"></span>
+            <form>
+                <p>Player 1</p>
+                <div class="input-group">
+                    <span class="input-group-addon" id="p1_name_">Name</span>
+                    <input type="text" class="form-control" placeholder="Player 1 Name" aria-describedby="p1_name_" id="p1_name">
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon" id="p1_url_">Image Url</span>
+                    <input type="text" class="form-control" placeholder="Player 1 Image Url" aria-describedby="p1_url_" id="p1_url">
+                </div>
+                <br>
+                <p>Player 2</p>
+                <div class="input-group">
+                    <span class="input-group-addon" id="p2_name_">Name</span>
+                    <input type="text" class="form-control" placeholder="Player 2 Name" aria-describedby="p2_name_" id="p2_name">
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon" id="p2_url_">Image Url</span>
+                    <input type="text" class="form-control" placeholder="Player 2 Image Url" aria-describedby="p2_url_" id="p2_url">
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+            </form>
+        </div>
+    </div>
     <div id="top" class="center">
         <div id="playermove">&nbsp;</div>
         <div id="notification">&nbsp;</div>
+        <div id="buttons">
+            <span class="glyphicon glyphicon-cog" aria-hidden="true" id='settings' title="settings"></span>
+            <span class="glyphicon glyphicon-repeat gly-spin" aria-hidden="true" id='reset' title="reset"></span>
+            <span class="glyphicon glyphicon-share-alt icon-flipped" aria-hidden="true" id='undo' title="undo"></span>
+            <span class="glyphicon glyphicon-share-alt" aria-hidden="true" id='redo' title="redo"></span>
+            <!--             <button id="reset">Reset</button>
+            <button id="undo">Undo</button>
+            <button id="redo">Redo</button> -->
+        </div>
     </div>
-    <div id='board_container'></div>
-    <div id="buttons">
-        <button id="reset">Reset</button>
-        <button id="undo">Undo</button>
-        <button id="redo">Redo</button>
-    </div>
+    <div class="container" id='board_container'></div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="app.js"></script>
 </body>
 
 </html>
